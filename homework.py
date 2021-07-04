@@ -4,9 +4,13 @@ from math import fabs
 
 class Record:
 
+    amount: float
+    comment: str
+    date: dt.date
+
     DATE_FORMAT = '%d.%m.%Y'
 
-    def __init__(self, amount: float, comment: str, date=None):
+    def __init__(self, amount: float, comment: str, date=None) -> None:
         if date is None:
             self.date = dt.date.today()
         else:
@@ -14,47 +18,53 @@ class Record:
         self.amount = amount
         self.comment = comment
 
+
 class Calculator:
-    def __init__(self, limit):
+
+    limit: int
+
+    def __init__(self, limit: int) -> None:
         self.limit = limit
         self.records = []
 
-    def add_record(self, rec):
+    def add_record(self, rec: Record) -> None:
         '''Функция сохраняющая новую запись.'''
         self.records.append(rec)
 
-    def get_today_stats(self):
+    def get_today_stats(self) -> int:
         '''Информация за день.'''
-        expens_today = 0
-        today_date = dt.datetime.now().date()
-        for i in range(len(self.records)):
-            if self.records[i].date == today_date:
-                expens_today += self.records[i].amount
+        expens_today: int = 0
+        today_date: dt.date = dt.date.today()
+        for record in self.records:
+            if record.date == today_date:
+                expens_today += record.amount
         return expens_today
 
-    def get_week_stats(self):
+    def get_week_stats(self) -> int:
         '''Информация за неделю.'''
-        today_date = dt.datetime.now().date()
-        expens_week = 0
-        for i in range(7):
-            for i in range(len(self.records)):
-                if self.records[i].date == today_date:
-                    expens_week += self.records[i].amount
+        today_date: dt.date = dt.date.today()
+        expens_week: int = 0
+        i = 0
+        while i < 7:
+            for record in self.records:
+                if record.date == today_date:
+                    expens_week += record.amount
+                else:
+                    continue
             today_date += dt.timedelta(days=1)
+            i += 1
         return expens_week
 
 
 class CaloriesCalculator(Calculator):
 
-    def get_calories_remained(self):
+    def get_calories_remained(self) -> str:
         '''Сколько ещё калорий можно/нужно получить сегодня.'''
-        expens = self.get_today_stats()
-
-        if self.limit > expens:
-            expens = self.limit - expens
-            return (f'Сегодня можно съесть что-нибудь ещё, но с общей'
-                    f'калорийностью не более {expens} кКал')
-
+        expens_kkal: int = self.get_today_stats()
+        if self.limit > expens_kkal:
+            expens_kkal = self.limit - expens_kkal
+            return (f'Сегодня можно съесть что-нибудь ещё, но с общей '
+                    f'калорийностью не более {expens_kkal} кКал')
         else:
             return 'Хватит есть!'
 
@@ -64,17 +74,18 @@ class CashCalculator(Calculator):
     EURO_RATE = 86.94
     USD_RATE = 73.24
 
-    def get_today_cash_remained(self, currency):
+    def get_today_cash_remained(self, currency) -> str:
         '''Сколько ещё денег можно потратить сегодня.'''
-        expens = self.get_today_stats()
+        expens: int = self.get_today_stats()
+
         if currency == 'eur':
             self.limit = self.limit / CashCalculator.EURO_RATE
-            expens = expens / CashCalculator.EURO_RATE
+            expens = self.get_today_stats() / CashCalculator.EURO_RATE
             currency = 'Euro'
 
         elif currency == 'usd':
             self.limit = self.limit / CashCalculator.USD_RATE
-            expens = expens / CashCalculator.USD_RATE
+            expens = self.get_today_stats() / CashCalculator.USD_RATE
             currency = 'USD'
 
         else:
@@ -85,8 +96,8 @@ class CashCalculator(Calculator):
 
         elif self.limit < expens:
             debt = fabs(self.limit - expens)
-            return f'Денег нет, держись: твой долг - {debt} {currency}'
-
+            return (f'Денег нет, держись: твой долг'
+                    f' - {round(debt,2)} {currency}')
         else:
             balance = self.limit - expens
-            return f'На сегодня осталось {balance} {currency}'
+            return f'На сегодня осталось {round(balance,2)} {currency}'
