@@ -90,17 +90,3 @@ class CashCalculator(Calculator):
         else:
             balance = self.limit - expens
             return f'На сегодня осталось {balance} {currency}'
-
-cash_calculator = CashCalculator(1000)
-
-cash_calculator.add_record(Record(amount=145, comment='кофе'))
-# и к этой записи тоже дата должна добавиться автоматически
-cash_calculator.add_record(Record(amount=300, comment='Серёге за обед'))
-# а тут пользователь указал дату, сохраняем её
-cash_calculator.add_record(Record(amount=3000,
-                                  comment='бар в Танин др',
-                                  date='05.07.2021'))
-
-print(cash_calculator.records[2].date)
-
-print(cash_calculator.get_week_stats())
