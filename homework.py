@@ -43,8 +43,7 @@ class Calculator:
     def get_week_stats(self) -> int:
         '''Информация за неделю.'''
         week_sum: int = 0
-        date_week_ago: dt.date = (dt.date.today()
-                                  - dt.timedelta(days=7))
+        date_week_ago: dt.date = (dt.date.today() - dt.timedelta(days=7))
         for record in self.records:
             if dt.date.today() >= record.date > date_week_ago:
                 week_sum += record.amount
