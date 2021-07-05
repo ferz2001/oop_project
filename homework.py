@@ -42,18 +42,13 @@ class Calculator:
 
     def get_week_stats(self) -> int:
         '''Информация за неделю.'''
-        today_date: dt.date = dt.date.today()
-        expens_week: int = 0
-        i = 0
-        while i < 7:
-            for record in self.records:
-                if record.date == today_date:
-                    expens_week += record.amount
-                else:
-                    continue
-            today_date += dt.timedelta(days=1)
-            i += 1
-        return expens_week
+        week_sum: int = 0
+        date_week_ago: dt.date = (dt.date.today()
+                                  - dt.timedelta(days=7))
+        for record in self.records:
+            if dt.date.today() >= record.date > date_week_ago:
+                week_sum += record.amount
+        return week_sum
 
 
 class CaloriesCalculator(Calculator):
