@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import Any
+from typing import Dict, List
 
 
 class Record:
@@ -19,8 +19,8 @@ class Calculator:
     """Класс с основными методами для калькулятора."""
     def __init__(self, limit: int) -> None:
         self.limit = limit
-        self.records: list[Record] = []
-        self.week_time: dt.timedelta = dt.timedelta(days=7)
+        self.records: List[Record] = []
+        self.week_ago_time: dt.date = dt.date.today() - dt.timedelta(days=7)
         self.today_date: dt.date = dt.date.today()
 
     def add_record(self, record: Record) -> None:
@@ -35,9 +35,8 @@ class Calculator:
 
     def get_week_stats(self) -> int:
         '''Информация за неделю.'''
-        date_week_ago: dt.date = (self.today_date - self.week_time)
-        week_sum: int = sum(record.amount for record in self.records
-                            if dt.date.today() >= record.date > date_week_ago)
+        week_sum: int = sum(record.amount for record in self.records if dt.
+                            date.today() >= record.date > self.week_ago_time)
         return week_sum
 
     def get_expense(self, item_expense: int) -> int:
@@ -67,21 +66,25 @@ class CashCalculator(Calculator):
 
     def get_today_cash_remained(self, currency: str) -> str:
         '''Сколько ещё денег можно потратить сегодня.'''
-        valute: dict[str, list[Any]] = {'rub': [self.RUB, 'руб'],
-                                        'eur': [self.EURO_RATE, 'Euro'],
-                                        'usd': [self.USD_RATE, 'USD']}
-        rate: float = valute[currency][0]
-        valute_text: str = valute[currency][1]
-        limit = self.limit / rate
-        expense_money = self.get_today_stats() / rate
-
-        if limit == expense_money:
+        expense_money = self.limit - self.get_today_stats()
+        if not expense_money:
             return 'Денег нет, держись'
+        valute: Dict[str, tuple[float, str]] = {'rub': (self.RUB,
+                                                        'руб'),
+                                                'eur': (self.EURO_RATE,
+                                                        'Euro'),
+                                                'usd': (self.USD_RATE,
+                                                        'USD')}
+        rate, valute_text = valute[currency]
+        limit = self.limit / rate
+        expense_money_rate = self.get_today_stats() / rate
 
-        elif limit < expense_money:
-            debt: float = abs(limit - expense_money)
+        if limit < expense_money_rate and limit:
+            debt: float = abs(limit - expense_money_rate)
             return (f'Денег нет, держись: твой долг'
                     f' - {round(debt,2)} {valute_text}')
-        else:
-            balance: float = limit - expense_money
+        elif limit > expense_money_rate:
+            balance: float = limit - expense_money_rate
             return f'На сегодня осталось {round(balance,2)} {valute_text}'
+        else:
+            return 'Ошибка'
