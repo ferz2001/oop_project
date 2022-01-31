@@ -1,2 +1,2 @@
-# hw_python_oop
-Sprint 2. Итоговый проект.
+# oop_base_project
+Учебный проект по ООП Python. Калькулятор каллорий.
